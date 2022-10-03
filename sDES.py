@@ -28,21 +28,101 @@ def sBoxes(sBox, half):
     return testbin
 
 
+def encryption(text, keyOne, keyTwo):
+    #==========================================================#
+    #On to the actual encription
+    #1. Initial Permutation
+    cyphered = []
+    cyphered = permutation(text, ipTable)
 
-#key = "0000011111"
-#plainText = "01010101"
+    #2. We divide the above 8 bit block into two
+    #We also expand the rightHalf with the epTable
+    #then we XOR it with keyOne
+    leftHalf = cyphered[:4]
+    rightHalf = cyphered[4:]
+
+
+    rightExpand = permutation(rightHalf, epTable)
+
+
+    xored = xor(rightExpand, keyOne)
+    xorLeft = xored[:4]
+    xorRight = xored[4:]
+
+    coordL = sBoxes(s0, xorLeft)
+    coordR = sBoxes(s1, xorRight)
+
+    boxOut = coordL + coordR
+    boxOut = permutation(boxOut, p4table)
+
+    xorLeft = xor(leftHalf, boxOut)
+
+    combined = xorLeft + rightHalf
+
+    #3. We divide combine into two halves and swap them
+    combined[:4], combined[4:] = combined[4:], combined[:4]
+
+    #4. We repeat step 2, but after we expand,
+    #we now use keyTwo for the XOR, and what we use as an input
+    #now, is the "combined" variable
+    leftHalf = combined[:4]
+    rightHalf = combined[4:]
+
+    rightExpand = permutation(rightHalf, epTable)
+
+    xored = xor(rightExpand, keyTwo) 
+    xorLeft = xored[:4]
+    xorRight = xored[4:]
+
+    coordL = sBoxes(s0, xorLeft)
+    coordR = sBoxes(s1, xorRight)
+
+    boxOut = coordL + coordR
+    boxOut = permutation(boxOut, p4table)
+
+    xorLeft = xor(leftHalf, boxOut)
+
+    combined = xorLeft + rightHalf
+
+    rightExpand = permutation(rightHalf, epTable)
+
+    xored = xor(rightExpand, keyTwo)
+    xorLeft = xored[:4]
+    xorRight = xored[4:]
+
+    coordL = sBoxes(s0, xorLeft)
+    coordR = sBoxes(s1, xorRight)
+
+    boxOut = coordL + coordR
+    boxOut = permutation(boxOut, p4table)
+
+    xorLeft = xor(leftHalf, boxOut)
+
+    combined = xorLeft + rightHalf
+
+    inverse = permutation(combined, invTable)
+
+    return inverse
+
+key = "0000011111"
+plainText = "01010101"
+decipher = "11000100"
 
 #key = "0010010111"
 #plainText = "00110110"
+#decipher = "01011010"
 
 #key = "0000000000"
 #plainText = "00000000"
+#decipher = "11110000"
 
-key = "1111111111"
-plainText = "11111111"
+#key = "1111111111"
+#plainText = "11111111"
+#decipher = "00001111"
 
 #key = "1010000010"
-#plainText = "10010111" 
+#plainText = "10010111"
+#decipher = "00111000"
 
 keyList = list(key)
 
@@ -87,77 +167,7 @@ keyTwo = permutation(keyList, p8table)
 #print(keyTwo)
 
 
-#==========================================================#
-#On to the actual encription
-#1. Initial Permutation
-cyphered = []
-cyphered = permutation(plainText, ipTable)
-
-#2. We divide the above 8 bit block into two
-#We also expand the rightHalf with the epTable
-#then we XOR it with keyOne
-leftHalf = cyphered[:4]
-rightHalf = cyphered[4:]
-
-
-rightExpand = permutation(rightHalf, epTable)
-
-
-xored = xor(rightExpand, keyOne)
-xorLeft = xored[:4]
-xorRight = xored[4:]
-
-coordL = sBoxes(s0, xorLeft)
-coordR = sBoxes(s1, xorRight)
-
-boxOut = coordL + coordR
-boxOut = permutation(boxOut, p4table)
-
-xorLeft = xor(leftHalf, boxOut)
-
-combined = xorLeft + rightHalf
-
-#3. We divide combine into two halves and swap them
-combined[:4], combined[4:] = combined[4:], combined[:4]
-
-#4. We repeat step 2, but after we expand,
-#we now use keyTwo for the XOR, and what we use as an input
-#now, is the "combined" variable
-leftHalf = combined[:4]
-rightHalf = combined[4:]
-
-rightExpand = permutation(rightHalf, epTable)
-
-xored = xor(rightExpand, keyTwo) 
-xorLeft = xored[:4]
-xorRight = xored[4:]
-
-coordL = sBoxes(s0, xorLeft)
-coordR = sBoxes(s1, xorRight)
-
-boxOut = coordL + coordR
-boxOut = permutation(boxOut, p4table)
-
-xorLeft = xor(leftHalf, boxOut)
-
-combined = xorLeft + rightHalf
-
-rightExpand = permutation(rightHalf, epTable)
-
-xored = xor(rightExpand, keyTwo)
-xorLeft = xored[:4]
-xorRight = xored[4:]
-
-coordL = sBoxes(s0, xorLeft)
-coordR = sBoxes(s1, xorRight)
-
-boxOut = coordL + coordR
-boxOut = permutation(boxOut, p4table)
-
-xorLeft = xor(leftHalf, boxOut)
-
-combined = xorLeft + rightHalf
-
-inverse = permutation(combined, invTable)
 print("Key:\n" + key + "\n" + "Plaintext:\n" + plainText + "\n" + "Ciphertext: " )
-print(inverse)
+print(encryption(plainText, keyOne, keyTwo))
+print("Deciphered text (should be the same as Plaintext):")
+print(encryption(decipher, keyTwo, keyOne))
